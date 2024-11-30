@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Ganancias de Criptomonedas</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1d1f20, #292b2c);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            flex-direction: column; /* Alinea los elementos en columna */
+        }
+
+        /* Estilo del banner */
+        .ticker-container {
+            background-color: #111;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .ticker-text {
+            display: inline-block;
+            white-space: nowrap;
+            animation: ticker 15s linear infinite;
+            text-transform: uppercase;
+        }
+
+        .ticker-text span {
+            margin-right: 50px;
+            color: #ffcc00; /* Color dorado de Wall Street */
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Estilo de la calculadora */
+        .container {
+            max-width: 500px;
+            background: #222;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 1rem;
+            position: relative;
+            width: 100%;
+            overflow-y: auto;
+            margin: 0 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffcc00;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-transform: uppercase;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-size: 1.1em;
+            color: #bbb;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #333;
+            color: #fff;
+            font-size: 1.1em;
+        }
+
+        select {
+            font-size: 1.1em;
+        }
+
+        button {
+            background: linear-gradient(45deg, #28a745, #218838);
+            color: white;
+            padding: 15px 25px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #218838, #28a745);
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+            color: #28a745;
+        }
+
+        #error {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Efecto de luz en el fondo */
+        .container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 50%, rgba(0, 0, 0, 0.7) 100%);
+            border-radius: 12px;
+            animation: glowing 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* Animación de resplandor */
+        @keyframes glowing {
+            0% {
+                box-shadow: 0 0 15px rgba(255, 255, 255, 0.3), 0 0 30px rgba(255, 255, 255, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(255, 255, 255, 0.6), 0 0 50px rgba(255, 255, 255, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 15px rgba(255, 255, 255, 0.3), 0 0 30px rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        /* Estilos para pantallas pequeñas */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.2em;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 1.1em;
+            }
+
+            input[type="number"], select {
+                font-size: 1em;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Banner de ticker en tiempo real (ahora está arriba de la calculadora) -->
+<div class="ticker-container">
+    <div class="ticker-text" id="cryptoTicker">
+        Cargando precios...
+    </div>
+</div>
+
+<!-- Contenedor de la calculadora -->
+<div class="container">
+    <h1>Calculadora de Ganancias</h1>
+    
+    <!-- Precios de criptomonedas arriba -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <p><strong>Precio Actual</strong></p>
+        <div id="prices" style="display: flex; justify-content: space-between; padding: 10px; font-size: 1.1em; color: #ffcc00;">
+            <div id="bitcoinPrice">Bitcoin: $ -</div>
+            <div id="ethereumPrice">Ethereum: $ -</div>
+            <div id="solanaPrice">Solana: $ -</div>
+        </div>
+    </div>
+
+    <label for="cryptoSelect">Seleccionar Criptomoneda:</label>
+    <select id="cryptoSelect" onchange="updatePrice()">
+        <option value="bitcoin">Bitcoin (BTC)</option>
+        <option value="ethereum">Ethereum (ETH)</option>
+        <option value="solana">Solana (SOL)</option>
+    </select>
+
+    <label for="purchasePrice">Precio de Compra (USD):</label>
+    <input type="number" id="purchasePrice" placeholder="Ejemplo: 30000" required>
+
+    <label for="quantity">Cantidad Comprada:</label>
+    <input type="number" id="quantity" placeholder="Ejemplo: 0.5" required>
+
+    <label for="currentPrice">Precio Actual (USD): <span id="livePrice">-</span></label>
+    <input type="number" id="currentPrice" placeholder="Ejemplo: 40000" required readonly>
+
+    <button onclick="calculateProfit()">Calcular Ganancias</button>
+
+    <div class="result" id="result"></div>
+    <div id="error"></div>
+</div>
+
+<script>
+    const API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd';
+
+    // Obtener precios de criptomonedas de CoinGecko para el ticker
+    function fetchCryptoPrices() {
+        fetch(API_URL)
+        .then(response => response.json())
+        .then(data => {
+            const bitcoinPrice = data.bitcoin.usd;
+            const ethereumPrice = data.ethereum.usd;
+            const solanaPrice = data.solana.usd;
+
+            // Mostrar los precios en el ticker (corriendo)
+            const tickerText = `
+                <span>Bitcoin: $${bitcoinPrice}</span>
+                <span>Ethereum: $${ethereumPrice}</span>
+                <span>Solana: $${solanaPrice}</span>
+            `;
+            document.getElementById('cryptoTicker').innerHTML = tickerText;
+
+            // Mostrar los precios arriba en la calculadora
+            document.getElementById('bitcoinPrice').textContent = `Bitcoin: $${bitcoinPrice}`;
+            document.getElementById('ethereumPrice').textContent = `Ethereum: $${ethereumPrice}`;
+            document.getElementById('solanaPrice').textContent = `Solana: $${solanaPrice}`;
+
+            // Establecer el precio actual en el campo de la criptomoneda seleccionada
+            updatePrice();
+        });
+    }
+
+    // Actualizar el precio en el campo de entrada basado en la criptomoneda seleccionada
+    function updatePrice() {
+        const selectedCrypto = document.getElementById('cryptoSelect').value;
+        fetch(API_URL)
+        .then(response => response.json())
+        .then(data => {
+            let currentPrice;
+            if (selectedCrypto === 'bitcoin') {
+                currentPrice = data.bitcoin.usd;
+            } else if (selectedCrypto === 'ethereum') {
+                currentPrice = data.ethereum.usd;
+            } else {
+                currentPrice = data.solana.usd;
+            }
+            document.getElementById('currentPrice').value = currentPrice;
+            document.getElementById('livePrice').textContent = currentPrice;
+        });
+    }
+
+    // Calcular las ganancias
+    function calculateProfit() {
+        const purchasePrice = parseFloat(document.getElementById('purchasePrice').value);
+        const quantity = parseFloat(document.getElementById('quantity').value);
+        const currentPrice = parseFloat(document.getElementById('currentPrice').value);
+
+        if (isNaN(purchasePrice) || isNaN(quantity) || isNaN(currentPrice)) {
+            document.getElementById('error').textContent = 'Por favor, ingresa valores válidos en todos los campos.';
+            document.getElementById('result').textContent = '';
+            return;
+        }
+
+        const profit = (currentPrice - purchasePrice) * quantity;
+        document.getElementById('result').textContent = `Ganancia: $${profit.toFixed(2)}`;
+        document.getElementById('error').textContent = '';
+    }
+
+    // Iniciar la calculadora con los precios actuales al cargar
+    window.onload = function() {
+        fetchCryptoPrices();
+    };
+
+    // Actualizar los precios cada 10 segundos
+    setInterval(fetchCryptoPrices, 10000);
+</script>
+
+</body>
+</html>
